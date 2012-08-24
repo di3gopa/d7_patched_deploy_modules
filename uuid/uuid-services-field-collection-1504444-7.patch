@@ -1,0 +1,50 @@
+diff --git a/uuid_services/resources/field_collection.resource.inc b/uuid_services/resources/field_collection.resource.inc
+new file mode 100644
+index 0000000..74392c5
+--- /dev/null
++++ b/uuid_services/resources/field_collection.resource.inc
+@@ -0,0 +1,12 @@
++<?php
++
++function _field_collection_resource_definition() {
++  if (module_exists('field_collection')) {
++    // We will allow uuid_services_services_resources_alter() to add the
++    // default UUID-related operations to this resource.
++    return array('field_collection_item' => array());
++  }
++  else {
++    return array();
++  }
++}
+diff --git a/uuid_services/uuid_services.module b/uuid_services/uuid_services.module
+index d944a53..db9c44c 100644
+--- a/uuid_services/uuid_services.module
++++ b/uuid_services/uuid_services.module
+@@ -170,7 +170,7 @@ function _uuid_services_entity_access($op, $args) {
+     $entity_ids = entity_get_id_by_uuid($entity_type, array($args[1]));
+     $entity = NULL;
+     if (!empty($args[2])) {
+-      $entity = (object)$args[2];
++      $entity = entity_create($entity_type, $args[2]);
+       // We have to make the entity local (i.e. only have local references), for
+       // access functions to work on it.
+       entity_make_entity_local($entity_type, $entity);
+@@ -205,3 +205,18 @@ function _uuid_services_entity_access($op, $args) {
+     return services_error($exception, 406, $entity_type);
+   }
+ }
++
++/**
++ * Implements hook_services_resources().
++ */
++function uuid_services_services_resources() {
++  module_load_include('inc', 'uuid_services', 'resources/field_collection.resource');
++
++  $resources = array(
++    '#api_version' => 3002,
++  );
++
++  $resources += _field_collection_resource_definition();
++
++  return $resources;
++}

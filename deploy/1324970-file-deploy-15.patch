@@ -1,0 +1,35 @@
+From 03d4fe241923b89914d7e37e00ff4bd6099e9358 Mon Sep 17 00:00:00 2001
+From: Bram Goffings <bramgoffings@gmail.com>
+Date: Sun, 25 Mar 2012 20:27:46 +0200
+Subject: [PATCH] Issue #1324970 by John Morahan, mlncn: Fixed Image fields
+ don't work.
+
+---
+ deploy.core.inc |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
+
+diff --git a/deploy.core.inc b/deploy.core.inc
+index 9868750..578396a 100644
+--- a/deploy.core.inc
++++ b/deploy.core.inc
+@@ -29,6 +29,17 @@ function taxonomy_entity_load(&$entities, $entity_type) {
+ 
+ /**
+  * Implements hook_deploy_entity_alter().
++ */
++function file_deploy_entity_alter(&$entity, $entity_type) {
++  if ($entity_type == 'file') {
++    if (!isset($entity->file_contents)) {
++      $entity->file_contents = base64_encode(file_get_contents($entity->uri));
++    }
++  }
++}
++
++/**
++ * Implements hook_deploy_entity_alter().
+  *
+  * This hook will go through all fields for an entity and invoke a new hook for
+  * all field modules. This saves a lot of work for each field implementaor.
+-- 
+1.7.5.4
+
